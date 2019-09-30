@@ -36,7 +36,8 @@ password = 'copia'
 cnxn = pyodbc.connect('DRIVER={ODBC Driver 17 for SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
 
 # cursor = cnxn.cursor()
-query="""SELECT DISTINCT copia.Requisition.requisitionNumber as [Order ID], copia.SubSpecimen.ID as [SID], copia.Location.name as [Ordering Location], 
+query="""use copia
+SELECT DISTINCT copia.Requisition.requisitionNumber as [Order ID], copia.SubSpecimen.ID as [SID], copia.Location.name as [Ordering Location],
 	CONVERT(varchar(20),dateadd(hour,-4,dateadd(s,copia.Requisition.receivedStamp/1000, '01/01/1970 00:00:00')),121) as [Delivery Date],	
 	Replace(Replace(Replace(Replace(copia.Requisition.requisitionStatus, 15, 'Partial Results'), 10, 'No Results'), 5, 'Partially Collected'), 0, 'Not Collected') as [Order Status]
 FROM copia.Requisition
@@ -48,6 +49,7 @@ WHERE copia.Requisition.requisitionStatus != 20 --not in ('20', '999')
 	AND DATEDIFF(s, '1970-01-01 00:00:00', GETUTCDATE()) > (copia.Requisition.receivedStamp + 345600000)/1000 --older than 4 days worth of miliseconds
 	AND DATEDIFF(s, '1970-01-01 00:00:00', GETUTCDATE()) < (copia.Requisition.receivedStamp + 2592000000)/1000 --newer than 30 days worth of miliseconds
 	AND copia.SubSpecimen.ID not like 'iop%'
+	and Location.ID != '51-75033-18-0023865' -- THD location ID for test samples and PT
 ORDER BY [SID]"""
 # cursor.execute(query)
 # data = cursor.fetchall()
